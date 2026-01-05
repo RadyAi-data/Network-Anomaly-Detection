@@ -1,0 +1,10 @@
+{
+    "Total Connections": 125973,
+    "Features": 41,
+    "Training Samples": 88181,
+    "Test Samples": 37792,
+    "Normal Traffic": 67343,
+    "Attack Traffic": 58630,
+    "Unique Attack Types": 22,
+    "Missing Values": 0
+}

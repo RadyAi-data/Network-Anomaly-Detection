@@ -1,0 +1,68 @@
+````
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+ENV/
+.virtualenvs/
+VIRTUAL_ENV/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Data files (too large for git)
+data/*.csv
+data/*.txt
+data/*.parquet
+data/*.json
+*.db
+*.sqlite3
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Models (can be large)
+models/*.pkl
+models/*.h5
+models/*.joblib
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Secrets (IMPORTANT!)
+.env
+config.ini
+*.pem
+*.key
+secrets.json
+````

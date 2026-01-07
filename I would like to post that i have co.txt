@@ -1,0 +1,11 @@
+I would like to post that i have completed my second Project which was heavy influenced by the last lecture in data structures and algorithm were we took hashmaps and it seemed like a smart way to get data and the hashing makes it secure so i thought can i find something like to use in my next project then i remembered sql where i can find info about what i need in the database then after my finals i started 
+
+
+
+
+
+I first thought about Isolation forest only but something annoyed me like yeah its an anamoly but which type and if used supervised it would be biased and not accurate so i started by that will i could start by finding the anamoly then find a way then it hit me i could use supervised model trained on anmolies that can detect which type but there about 21 anamolies (attacks)
+and most were Neptune so i had group by as after all they are ways to do the same attack after still dos showed very large difference so i had to downsample for the model not to always assume its down sample as its easier and will be dominated 
+
+
+while testing my model i found that type of attack U2R which is fatal to a system is almost not detected that meant that isolation forest coudlnt identify it which was weird but after analyzing sample data using sql it was clear that its data is very close to normal connections b  and seems to be well hidden with normal connections so i had to implement a bypass for my two models where data is checked with patterns learned of U2R here was a combination of think9ing about data and finding a pattern and to code it . The data is checked with bypass if flaged U2R it is a U2R since U2R most of the time has a certain values.

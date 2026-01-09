@@ -42,6 +42,9 @@ The system includes a **Streamlit Dashboard** designed for security analysts:
 
 ---
 
+### To accsess the website:
+https://network-anomaly-detection-etfj9gn2gfjbvhwu2ph5vr.streamlit.app/
+
 ## 🚀 Installation & Usage
 
 ### 1. Clone the Repository

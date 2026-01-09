@@ -1,4 +1,6 @@
-````
+# ========================
+# Python / System Basics
+# ========================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,62 +9,49 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.DS_Store
+Thumbs.db
 
-# Virtual environments
+# ========================
+# Virtual Environments
+# ========================
+# Ignore your local virtual environment folder
 venv/
 env/
 ENV/
 .virtualenvs/
 VIRTUAL_ENV/
 
-# Distribution / packaging
-*.egg-info/
-dist/
-build/
-*.egg
-
-# Data files (too large for git)
+# ========================
+# Data Files (Too large for GitHub)
+# ========================
+# We ignore data to keep the repo light
 data/*.csv
 data/*.txt
-data/*.parquet
 data/*.json
+data/*.zip
+data/*.gz
 *.db
 *.sqlite3
 
-# Jupyter
+# ========================
+# Jupyter Notebooks
+# ========================
 .ipynb_checkpoints
 *.ipynb_checkpoints/
 
-# IDEs
+# ========================
+# IDE Settings
+# ========================
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Models (can be large)
-models/*.pkl
-models/*.h5
-models/*.joblib
-
-# Logs
-*.log
-logs/
-
-# Test coverage
-.coverage
-htmlcov/
-.pytest_cache/
-.tox/
-
-# Secrets (IMPORTANT!)
+# ========================
+# Secrets & Logs
+# ========================
 .env
 config.ini
-*.pem
-*.key
-secrets.json
-````
+*.log
+logs/

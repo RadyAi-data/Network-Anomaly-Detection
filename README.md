@@ -41,9 +41,12 @@ The system includes a **Streamlit Dashboard** designed for security analysts:
 * **Traffic Visualization:** Interactive Plotly charts for protocol breakdown and attack sources.
 
 ---
+2 Testing Options:
 
-### To accsess the website:
-https://network-anomaly-detection-etfj9gn2gfjbvhwu2ph5vr.streamlit.app/
+Option A:  https://network-anomaly-detection-etfj9gn2gfjbvhwu2ph5vr.streamlit.app/
+
+
+Option B:
 
 ## 🚀 Installation & Usage
 
@@ -51,17 +54,18 @@ https://network-anomaly-detection-etfj9gn2gfjbvhwu2ph5vr.streamlit.app/
 ```bash
 git clone [https://github.com/RadyAi-data/network-anomaly-detection.git](https://github.com/RadyAi-data/network-anomaly-detection.git)
 cd network-anomaly-detection
-
+```
 2. Install Dependencies
 
-Bash
+```bash
     pip install -r requirements.txt
+```
 
 3. Run the Dashboard
 
-Bash
+```bash
     streamlit run dashboard/app.py
-
+```
 How to test
 Download the CSV Template from the dashboard sidebar.
 

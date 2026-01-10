@@ -41,12 +41,18 @@ The system includes a **Streamlit Dashboard** designed for security analysts:
 * **Traffic Visualization:** Interactive Plotly charts for protocol breakdown and attack sources.
 
 ---
-2 Testing Options:
+## 2 Testing Options:
 
-Option A:  https://network-anomaly-detection-etfj9gn2gfjbvhwu2ph5vr.streamlit.app/
+## Option A:  https://network-anomaly-detection-etfj9gn2gfjbvhwu2ph5vr.streamlit.app/
+
+Download the CSV Template from the dashboard sidebar.
+
+Upload data/test_set_unlabelled.csv (or the provided sample).
+
+Click 🚀 Analyze Traffic.
 
 
-Option B:
+## Option B:
 
 ## 🚀 Installation & Usage
 
@@ -67,10 +73,10 @@ cd network-anomaly-detection
     streamlit run dashboard/app.py
 ```
 How to test
+
 Download the CSV Template from the dashboard sidebar.
 
 Upload data/test_set_unlabelled.csv (or the provided sample).
-
 Click 🚀 Analyze Traffic.
 
 View the detected threats and the "Intelligent Diagnosis" log.
@@ -79,6 +85,7 @@ View the detected threats and the "Intelligent Diagnosis" log.
 Project Structure
 Plaintext
 
+```text
 network-anomaly-detection/
 ├── dashboard/
 │   └── app.py              # Main Streamlit Dashboard (The "Product")
@@ -88,11 +95,12 @@ network-anomaly-detection/
 │   └── preprocessor.pkl     # Data Transformation Pipeline
 ├── notebooks/
 │   ├── 01_Intial_exploration.ipynb # Getting used to the data
-│   ├── 02_Deep_eda.ipynb # Exploring the data deeper,feature enginnering & setting up the SQL data base
-│   ├── 03_Prepping_data_for_learning.ipynb # Prepping the data for training
-│   └── 04_Model_training.ipynb # Training Both models & developing the Bypass to have the Hierarchical System
+│   ├── 02_Deep_eda.ipynb # Exploring the data deeper, feature engineering & SQL DB
+│   ├── 03_Prepping_data_for_learning.ipynb # Data prep
+│   └── 04_Model_training.ipynb # Training + hierarchical bypass
 ├── data/                   # (Not included in repo for size)
 └── requirements.txt        # Python dependencies
+```
 
 
 ## 📈 Performance

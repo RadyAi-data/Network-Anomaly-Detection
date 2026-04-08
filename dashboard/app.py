@@ -135,6 +135,21 @@ st.sidebar.download_button(
     mime="text/csv"
 )
 
+# --- NEW: Download Test Data Button ---
+test_data_path = "data/test_set.csv" 
+
+try:
+    with open(test_data_path, "rb") as file:
+        st.sidebar.download_button(
+            label="📁 Download Test Data",
+            data=file,
+            file_name="test_set.csv",
+            mime="text/csv"
+        )
+except FileNotFoundError:
+    st.sidebar.warning("⚠️ Test data not found. Check the path in your repository.")
+# --------------------------------------
+
 uploaded_file = st.sidebar.file_uploader("Upload Network Log (CSV)", type="csv")
 
 # ==========================================

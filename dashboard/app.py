@@ -3,46 +3,33 @@ import pandas as pd
 import joblib
 import plotly.express as px
 import numpy as np
+import zipfile
+import gzip
+import io
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-# ==========================================
-# 0. THE BRAIN: MODEL CLASS DEFINITION
-# ==========================================
 class HierarchicalNIDS(BaseEstimator, ClassifierMixin):
-    """
-    The 'Super Model' that combines Isolation Forest, 
-    Random Forest, and Logic Rules into one system.
-    """
     def __init__(self, preprocessor, gatekeeper, specialist):
         self.preprocessor = preprocessor
         self.gatekeeper = gatekeeper
         self.specialist = specialist
 
     def predict(self, X):
-        # 1. Preprocess
         X_processed = self.preprocessor.transform(X)
-
-        # 2. Gatekeeper (Anomaly Detection)
-        # 1 = Normal, -1 = Anomaly
         gatekeeper_preds = self.gatekeeper.predict(X_processed)
 
-        # 3. Bypass Rules (The "Stealth" Layer)
-        # Rule A: Root Shell = Always Anomaly
         if 'root_shell' in X.columns:
             mask_u2r = (X['root_shell'] == 1) & (gatekeeper_preds == 1)
             gatekeeper_preds[mask_u2r] = -1
 
-        # Rule B: Failed Logins = Always Anomaly
         if 'num_failed_logins' in X.columns:
             mask_r2l = (X['num_failed_logins'] > 2) & (gatekeeper_preds == 1)
             gatekeeper_preds[mask_r2l] = -1
             
-        # Rule C: File Creations = Always Anomaly
         if 'num_file_creations' in X.columns:
             mask_files = (X['num_file_creations'] > 2) & (gatekeeper_preds == 1)
             gatekeeper_preds[mask_files] = -1
 
-        # 4. Specialist (Classification)
         final_preds = np.array(["Normal"] * len(X), dtype=object)
         anomaly_indices = np.where(gatekeeper_preds == -1)[0]
 
@@ -53,14 +40,8 @@ class HierarchicalNIDS(BaseEstimator, ClassifierMixin):
 
         return final_preds
 
-# ==========================================
-# 1. PAGE CONFIG
-# ==========================================
-st.set_page_config(
-    page_title="Network Sentinel",
-    page_icon="🛡️",
-    layout="wide"
-)
+
+st.set_page_config(page_title="Network Sentinel", page_icon="🛡️", layout="wide")
 
 st.markdown("""
 <style>
@@ -76,7 +57,6 @@ st.markdown("""
 3.  **Bypass Rule (U2R):** Catching stealthy rootkit attacks via signature check.
 """)
 
-# --- CONFIGURATION: REQUIRED COLUMNS ---
 REQUIRED_COLUMNS = [
     'duration', 'protocol_type', 'service', 'flag', 'src_bytes', 'dst_bytes', 
     'land', 'wrong_fragment', 'urgent', 'hot', 'num_failed_logins', 
@@ -90,18 +70,12 @@ REQUIRED_COLUMNS = [
     'dst_host_rerror_rate', 'dst_host_srv_rerror_rate'
 ]
 
-# ==========================================
-# 2. LOAD MODELS
-# ==========================================
 @st.cache_resource
 def load_nids_system():
     try:
-        # Load components
         preprocessor = joblib.load('models/preprocessor.pkl')
         iso_forest = joblib.load('models/isolation_forest.pkl')
         rf_classifier = joblib.load('models/attack_classifier.pkl')
-        
-        # Assemble the System
         return HierarchicalNIDS(preprocessor, iso_forest, rf_classifier)
     except FileNotFoundError:
         st.error("❌ Models not found! Check your folder structure.")
@@ -109,9 +83,6 @@ def load_nids_system():
 
 nids_system = load_nids_system()
 
-# ==========================================
-# 3. HELPER: TEMPLATE
-# ==========================================
 def get_template_df():
     data = {col: [0] for col in REQUIRED_COLUMNS}
     data['duration'] = [0]
@@ -122,12 +93,10 @@ def get_template_df():
     data['dst_bytes'] = [4500]
     return pd.DataFrame(data)
 
-# ==========================================
-# 4. SIDEBAR & INPUT
-# ==========================================
 st.sidebar.header("Configuration")
 template_df = get_template_df()
 csv_template = template_df.to_csv(index=False).encode('utf-8')
+
 st.sidebar.download_button(
     label="📋 Download CSV Template",
     data=csv_template,
@@ -135,9 +104,7 @@ st.sidebar.download_button(
     mime="text/csv"
 )
 
-# --- NEW: Download Test Data Button ---
 test_data_path = "data/test_set.csv" 
-
 try:
     with open(test_data_path, "rb") as file:
         st.sidebar.download_button(
@@ -148,62 +115,68 @@ try:
         )
 except FileNotFoundError:
     st.sidebar.warning("⚠️ Test data not found. Check the path in your repository.")
-# --------------------------------------
 
-uploaded_file = st.sidebar.file_uploader("Upload Network Log (CSV)", type="csv")
+uploaded_file = st.sidebar.file_uploader("Upload Network Log (CSV, ZIP, GZ)", type=["csv", "zip", "gz"])
 
-# ==========================================
-# 5. MAIN LOGIC
-# ==========================================
 if uploaded_file is not None and nids_system:
-    # Reset state if new file
+    
+    file_size_mb = uploaded_file.size / (1024 * 1024)
+    if file_size_mb > 10:
+        st.sidebar.error(f"❌ Uploaded file is too large ({file_size_mb:.2f} MB). Max allowed size is 10 MB.")
+        st.stop()
+
     if 'last_uploaded' not in st.session_state or st.session_state.last_uploaded != uploaded_file.name:
         st.session_state.data_processed = False
         st.session_state.last_uploaded = uploaded_file.name
 
-    # Read File
     try:
-        df = pd.read_csv(uploaded_file)
+        if uploaded_file.name.endswith('.zip'):
+            with zipfile.ZipFile(uploaded_file) as z:
+                csv_files = [f for f in z.namelist() if f.endswith('.csv')]
+                if not csv_files:
+                    st.error("❌ No CSV file found inside the ZIP archive.")
+                    st.stop()
+                
+                with z.open(csv_files[0]) as f:
+                    df = pd.read_csv(f)
+                    st.sidebar.success(f"📦 Extracted {csv_files[0]} successfully!")
+                    
+        elif uploaded_file.name.endswith('.gz'):
+            with gzip.open(uploaded_file) as f:
+                df = pd.read_csv(f)
+                st.sidebar.success("📦 Extracted GZIP successfully!")
+                
+        else:
+            df = pd.read_csv(uploaded_file)
+            
     except Exception as e:
-        st.error(f"❌ Read Error: {e}")
+        st.error(f"❌ Read/Extraction Error: {e}")
         st.stop()
 
-    # Auto-Fix Headers
     if 'duration' not in df.columns:
-        uploaded_file.seek(0)
-        df_no_header = pd.read_csv(uploaded_file, header=None)
-        if len(df_no_header.columns) == len(REQUIRED_COLUMNS):
-            df_no_header.columns = REQUIRED_COLUMNS
-            df = df_no_header
+        if len(df.columns) == len(REQUIRED_COLUMNS):
+            df.columns = REQUIRED_COLUMNS
             st.toast("⚠️ Auto-fixed missing headers!", icon="🔧")
-        elif len(df_no_header.columns) == len(REQUIRED_COLUMNS) + 1:
-            df_no_header.columns = REQUIRED_COLUMNS + ['label']
-            df = df_no_header
+        elif len(df.columns) == len(REQUIRED_COLUMNS) + 1:
+            df.columns = REQUIRED_COLUMNS + ['label']
 
-    # Schema Validation
     missing_cols = [col for col in REQUIRED_COLUMNS if col not in df.columns]
     if missing_cols:
         st.error("❌ **Incompatible Data:** File does not match schema.")
         st.dataframe(get_template_df(), use_container_width=True, hide_index=True)
         st.stop()
 
-    # Simulation: IPs
     if 'src_ip' not in df.columns:
         internal_ips = [f"192.168.1.{i}" for i in range(10, 250)]
         df['src_ip'] = np.random.choice(internal_ips, size=len(df))
 
     st.sidebar.success(f"✅ Loaded {len(df)} Logs")
 
-    # RUN ANALYSIS
     if st.button("🚀 Analyze Traffic", type="primary"):
         with st.spinner("Running Hierarchical Detection Pipeline..."):
             
-            # --- THE MAGIC LINE 🚀 ---
-            # All the complexity is handled by the class now!
             df['Prediction'] = nids_system.predict(df)
-            # -------------------------
 
-            # Assign Bad IPs to Attacks (Simulation)
             bad_ip_pool = ["203.45.112.5", "89.22.101.4", "198.51.100.23", "5.188.62.11", "45.33.22.10"]
             mask_attack = df['Prediction'] != 'Normal'
             if mask_attack.sum() > 0:
@@ -212,19 +185,12 @@ if uploaded_file is not None and nids_system:
             st.session_state.df_results = df
             st.session_state.data_processed = True
 
-    # ==========================================
-    # 6. DASHBOARD
-    # ==========================================
     if st.session_state.get('data_processed', False):
         df_results = st.session_state.df_results
 
-        # Calculate Metrics
         total = len(df_results)
         n_threats = len(df_results[df_results['Prediction'] != 'Normal'])
-        pct_threats = (n_threats / total) * 100
-        
-        # Calculate Stealth Attacks (Proxy Metric)
-        # We count U2R/R2L detected as a proxy for "Stealth Caught"
+        pct_threats = (n_threats / total) * 100 if total > 0 else 0
         n_stealth = len(df_results[df_results['Prediction'].isin(['U2R', 'R2L'])])
 
         m1, m2, m3, m4 = st.columns(4)
@@ -235,7 +201,6 @@ if uploaded_file is not None and nids_system:
         
         st.divider()
 
-        # Visuals
         c1, c2 = st.columns(2)
         with c1:
             st.subheader("🛡️ Threat Distribution")
@@ -261,7 +226,6 @@ if uploaded_file is not None and nids_system:
             fig_bar = px.histogram(attacks_only, x='protocol_type', color='Prediction', barmode='group', color_discrete_map=color_map)
             st.plotly_chart(fig_bar, use_container_width=True)
 
-        # Intelligent Log
         st.subheader("🔍 Intelligent Threat Diagnosis")
         if not attacks_only.empty:
             def get_reason(row):
